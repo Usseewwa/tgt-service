@@ -1034,7 +1034,7 @@ function syncStaticTabs() {
 }
 
 // ==========================================
-// УПРАВЛЕНИЕ ШРИФТАМИ САЙДБАРА
+// УПРАВЛЕНИЕ ШРИФТАМИ И ОТРИСОВКА САЙДБАРА
 // ==========================================
 const SIDEBAR_FONTS = {
     inter: { label: 'Inter', family: "'Inter', sans-serif" },
@@ -1059,39 +1059,46 @@ function setSidebarFont(fontKey) {
     });
 }
 
-// ==========================================
-// ЗАГРУЗКА САЙДБАРА ИЗ ЕДИНОГО ФАЙЛА
-// ==========================================
-document.addEventListener('DOMContentLoaded', async () => {
+document.addEventListener('DOMContentLoaded', () => {
     let aside = document.querySelector('aside');
     if (!aside) {
         aside = document.createElement('aside');
         document.body.prepend(aside);
     }
 
-    // Жестко фиксированная ширина w-64 (256px) для всех страниц
+    const path = window.location.pathname.split('/').pop() || 'index.html';
+    const savedFont = localStorage.getItem('tgt_sidebar_font') || 'inter';
+
+    const sidebarHTML = `
+        <div class="h-16 flex items-center px-6 border-b border-slate-800 shrink-0">
+            <span class="font-black tracking-widest uppercase text-white whitespace-nowrap" style="font-size: 13px !important;">TGT Service</span>
+        </div>
+        <nav class="flex-1 py-2 space-y-1 overflow-y-auto">
+            <div class="px-6 py-1.5 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Приемка</div>
+            <a href="intake-repair.html" class="sidebar-link ${path === 'intake-repair.html' ? 'active' : ''} pl-8 py-2.5"><i class="fa-solid fa-file-arrow-down w-5 mr-2"></i> Прием в ремонт</a>
+            <a href="intake-b2b.html" class="sidebar-link ${path === 'intake-b2b.html' ? 'active' : ''} pl-8 py-2.5"><i class="fa-solid fa-boxes-packing w-5 mr-2"></i> Возвраты и брак (B2B)</a>
+            
+            <div class="pt-3 pb-1.5 text-[11px] font-bold text-slate-500 uppercase tracking-wider px-6">Управление</div>
+            <a href="queue.html" class="sidebar-link ${path === 'queue.html' ? 'active' : ''} py-2.5"><i class="fa-solid fa-clipboard-list w-5 mr-3"></i> Очередь ремонтов</a>
+            <a href="catalog.html" class="sidebar-link ${path === 'catalog.html' || path === 'parts.html' || path === 'part-details.html' ? 'active' : ''} py-2.5"><i class="fa-solid fa-warehouse w-5 mr-3"></i> Склад (ЗЧ)</a>
+            <a href="index.html" class="sidebar-link ${path === 'index.html' ? 'active' : ''} py-2.5"><i class="fa-solid fa-chart-pie w-5 mr-3"></i> Аналитика и KPI</a>
+        </nav>
+
+        <div class="p-3 border-t border-slate-800 shrink-0 space-y-2">
+            <a href="settings.html" class="sidebar-link ${path === 'settings.html' ? 'active' : ''} py-2.5 !px-3 rounded-lg"><i class="fa-solid fa-gear w-5 mr-3"></i> Настройки</a>
+            
+            <div class="pt-1 border-t border-slate-800/80">
+                <div class="text-[10px] text-slate-500 uppercase font-bold mb-1 px-1">Шрифт меню</div>
+                <div class="flex gap-1 bg-slate-950 p-1 rounded-lg">
+                    <button type="button" data-font="inter" onclick="setSidebarFont('inter')" class="font-switch-btn py-1 text-xs">Inter</button>
+                    <button type="button" data-font="plex" onclick="setSidebarFont('plex')" class="font-switch-btn py-1 text-xs">Plex</button>
+                    <button type="button" data-font="mono" onclick="setSidebarFont('mono')" class="font-switch-btn py-1 text-xs">Mono</button>
+                </div>
+            </div>
+        </div>
+    `;
+
     aside.className = "w-64 bg-slate-900 text-white flex flex-col shadow-lg z-20 shrink-0";
-
-    try {
-        // Загружаем HTML сайдбара с меткой времени (?v=...), чтобы браузер не кешировал файл
-        const response = await fetch('sidebar.html?v=' + Date.now());
-        const html = await response.text();
-        aside.innerHTML = html;
-
-        // Определяем текущую страницу и подсвечиваем пункт меню
-        const path = window.location.pathname.split('/').pop() || 'index.html';
-        aside.querySelectorAll('nav a, .p-3 a').forEach(link => {
-            const href = link.getAttribute('href');
-            if (href === path || (path === '' && href === 'index.html') || (path === 'parts.html' && href === 'catalog.html')) {
-                link.classList.add('active');
-            }
-        });
-
-        // Применяем сохраненный шрифт
-        const savedFont = localStorage.getItem('tgt_sidebar_font') || 'inter';
-        setSidebarFont(savedFont);
-
-    } catch (e) {
-        console.error('Ошибка загрузки sidebar.html:', e);
-    }
+    aside.innerHTML = sidebarHTML;
+    setSidebarFont(savedFont);
 });
