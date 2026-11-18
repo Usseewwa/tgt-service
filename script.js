@@ -1059,17 +1059,13 @@ function setSidebarFont(fontKey) {
     });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    let aside = document.querySelector('aside');
-    if (!aside) {
-        aside = document.createElement('aside');
-        document.body.prepend(aside);
-    }
+function renderSidebar() {
+    const aside = document.querySelector('aside');
+    if (!aside) return;
 
     const path = window.location.pathname.split('/').pop() || 'index.html';
-    const savedFont = localStorage.getItem('tgt_sidebar_font') || 'inter';
-
-    const sidebarHTML = `
+    
+    aside.innerHTML = `
         <div class="h-16 flex items-center px-6 border-b border-slate-800 shrink-0">
             <span class="font-black tracking-widest uppercase text-white whitespace-nowrap" style="font-size: 13px !important;">TGT Service</span>
         </div>
@@ -1098,7 +1094,9 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
     `;
 
-    aside.className = "w-64 bg-slate-900 text-white flex flex-col shadow-lg z-20 shrink-0";
-    aside.innerHTML = sidebarHTML;
+    const savedFont = localStorage.getItem('tgt_sidebar_font') || 'inter';
     setSidebarFont(savedFont);
-});
+}
+
+// Запускаем отрисовку сразу
+renderSidebar();
