@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TGT Service - Карточка ремонта</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans h-screen flex overflow-hidden text-base">
+
+    <aside></aside> <!-- Сайдбар подгрузится сам из sidebar.html -->
+
+
+    <!-- Основной контент -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        <div class="flex-1 overflow-auto p-6 w-full">
+            
+            <div id="view-order-details" class="w-full max-w-[1500px] mx-auto">
+                
+                <!-- Кнопка назад и статус -->
+                <div class="flex items-center justify-between mb-4 bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                    <a href="queue.html" class="text-slate-500 hover:text-slate-800 font-medium flex items-center transition">
+                        <i class="fa-solid fa-arrow-left mr-2"></i> К очереди
+                    </a>
+                    <div class="flex items-center space-x-4">
+                        <span class="text-sm text-slate-500 uppercase font-bold">Текущий этап:</span>
+                        <span class="status-badge text-lg" id="header-status">ОЖИДАНИЕ</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-[320px_1fr] gap-6 items-start">
+                    
+                    <!-- ЛЕВАЯ КОЛОНКА -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden sticky top-6">
+                        <div class="p-4 bg-slate-50 border-b border-slate-200">
+                            <div class="w-full h-56 bg-white rounded-lg border border-slate-200 flex items-center justify-center p-2">
+                                <img id="det-device-img" src="https://mns-basket-cdn-03.geobasket.net/vol2549/part254927/254927148/images/big/1.webp" class="w-full h-full object-contain" alt="Комбайн">
+                            </div>
+                        </div>
+                        
+                        <div class="p-5">
+                            <h2 class="text-2xl font-bold text-slate-800 mb-1" id="det-order-number">Загрузка...</h2>
+                            <div class="text-sm text-slate-500 font-medium mb-3" id="det-device-info">...</div>
+                            
+                            <div class="bg-slate-50 p-3 rounded-lg border border-slate-100 mb-6 space-y-2 text-sm">
+                                <div class="flex justify-between"><span class="text-slate-500">Дата приема:</span> <span class="font-medium" id="det-date">...</span></div>
+                                <div class="flex justify-between"><span class="text-slate-500">Дедлайн:</span> <span class="font-medium text-red-600" id="det-deadline">...</span></div>
+                                <div class="flex justify-between items-center border-t pt-2 mt-2">
+                                    <span class="text-slate-500">Осталось:</span> 
+                                    <span class="font-bold text-white bg-red-500 px-2 py-0.5 rounded" id="det-remaining">...</span>
+                                </div>
+                            </div>
+
+                            <div class="border-t pt-4">
+                                <h3 class="text-xs font-bold text-slate-400 uppercase mb-3">Маршрут ремонта</h3>
+                                <div class="stepper" id="repair-stepper"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ПРАВАЯ КОЛОНКА (Вкладки) -->
+                    <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col min-h-[700px]">
+                        
+                        <div class="flex border-b border-slate-200 bg-slate-50 px-2 pt-2 overflow-x-auto">
+                            <button onclick="switchMainTab('work')" id="tab-btn-work" class="tab-btn px-5 py-3 text-sm font-bold border-b-2 border-blue-600 text-blue-600 whitespace-nowrap"><i class="fa-solid fa-list-check mr-2"></i>Рабочая карта</button>
+                            <button onclick="switchMainTab('intake')" id="tab-btn-intake" class="tab-btn px-5 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">Приемка</button>
+                            <button onclick="switchMainTab('diagnostics')" id="tab-btn-diagnostics" class="tab-btn px-5 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">Диагностика</button>
+                            <button onclick="switchMainTab('repair')" id="tab-btn-repair" class="tab-btn px-5 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">Ремонт и ЗЧ</button>
+                            <button onclick="switchMainTab('issue')" id="tab-btn-issue" class="tab-btn px-5 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">Выдача</button>
+                            <button onclick="switchMainTab('logs')" id="tab-btn-logs" class="tab-btn px-5 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap"><i class="fa-solid fa-clock-rotate-left mr-1"></i> История</button>
+                        </div>
+
+                        <div class="p-6 flex-1 bg-white relative">
+                            
+                            <!-- Рабочая карта -->
+                            <div id="content-work" class="tab-content block animate-fade"><div id="work-area"></div></div>
+                            
+                            <!-- Приемка -->
+                            <div id="content-intake" class="tab-content hidden space-y-6 animate-fade">
+                                <h3 class="text-xl font-bold text-slate-800 border-b pb-2">Данные приемки</h3>
+                                <div class="grid grid-cols-2 gap-6">
+                                    <div class="col-span-2">
+                                        <label class="block text-sm font-medium text-slate-600 mb-1">Внешнее состояние</label>
+                                        <textarea class="w-full border rounded-lg p-3 text-sm h-20 bg-slate-50" readonly>Следы эксплуатации, деформация верхней крышки.</textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Диагностика -->
+                            <div id="content-diagnostics" class="tab-content hidden space-y-6 animate-fade">
+                                <h3 class="text-xl font-bold text-slate-800 border-b pb-2">Результаты диагностики</h3>
+                                <div class="grid grid-cols-2 gap-6">
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-600 mb-1">Симптом-код</label>
+                                        <input type="text" id="static-symptom" class="w-full border rounded-lg p-2 text-sm bg-slate-50" readonly>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-slate-600 mb-1">Результат</label>
+                                        <input type="text" id="static-defect" class="w-full border rounded-lg p-2 text-sm bg-slate-50" readonly>
+                                    </div>
+                                    <div class="col-span-2">
+                                        <label class="block text-sm font-medium text-slate-600 mb-1">Заключение инженера</label>
+                                        <textarea id="static-diag-text" class="w-full border rounded-lg p-3 text-sm h-32 bg-slate-50" readonly></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Ремонт и ЗЧ -->
+                            <div id="content-repair" class="tab-content hidden space-y-6 animate-fade">
+                                <h3 class="text-xl font-bold text-slate-800 border-b pb-2">Ремонт и Запчасти</h3>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full text-sm text-left border rounded-lg">
+                                        <thead class="bg-slate-50 border-b text-slate-500">
+                                            <tr><th class="p-3">Наименование ЗЧ</th><th class="p-3 text-center w-24">Кол-во</th><th class="p-3 w-32">Статус</th></tr>
+                                        </thead>
+                                        <tbody id="static-parts-table" class="divide-y divide-slate-100"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            
+                            <!-- Выдача -->
+                            <div id="content-issue" class="tab-content hidden space-y-6 animate-fade">
+                                <h3 class="text-xl font-bold text-slate-800 border-b pb-2">Выходной контроль и Выдача</h3>
+                                <div id="issue-locked" class="bg-yellow-50 border border-yellow-200 p-4 rounded-lg text-yellow-800 text-sm">
+                                    <i class="fa-solid fa-lock mr-2"></i> Раздел станет активным после завершения ремонта.
+                                </div>
+                                
+                                <div id="issue-unlocked" class="space-y-5 hidden">
+                                    
+                                    <!-- Блок клиента -->
+                                    <div id="issue-client-block">
+                                        <label class="flex items-start space-x-3 p-4 border rounded-lg bg-green-50 cursor-pointer border-green-200 mb-4">
+                                            <input type="checkbox" class="w-6 h-6 rounded text-green-600 mt-0.5" checked>
+                                            <div>
+                                                <span class="text-base text-green-900 font-bold block mb-1">В комплекте (сверка с приемкой)</span>
+                                                <span class="text-sm text-green-700">Убедитесь, что мы возвращаем клиенту все аксессуары.</span>
+                                            </div>
+                                        </label>
+                                        <div class="mb-4">
+                                            <label class="block text-sm font-bold text-slate-700 mb-1">Результат контроля (внешний вид)</label>
+                                            <textarea class="w-full border rounded-lg p-3 text-sm h-20">Проверено: устройство чистое, царапин после ремонта нет.</textarea>
+                                        </div>
+                                        <div class="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-3 mb-4">
+                                            <label class="flex items-center space-x-3 cursor-pointer">
+                                                <input type="checkbox" class="w-5 h-5 rounded text-red-600" checked>
+                                                <span class="text-sm text-slate-800 font-bold">Без удостоверения личности не выдавать!</span>
+                                            </label>
+                                            <div>
+                                                <label class="block text-sm text-slate-600 mb-1">Документ клиента</label>
+                                                <input type="text" class="w-full border p-2 rounded-lg text-sm" placeholder="Серия и номер паспорта">
+                                            </div>
+                                        </div>
+                                        <button onclick="alert('Заказ закрыт. Акт подписан. Устройство выдано клиенту.')" class="w-full bg-green-600 hover:bg-green-700 text-white py-3.5 rounded-lg font-bold text-lg shadow-md transition">
+                                            <i class="fa-solid fa-signature mr-2"></i> Выдать клиенту (Закрыть заказ)
+                                        </button>
+                                    </div>
+
+                                    <!-- Блок B2B -->
+                                    <div id="issue-b2b-block" class="hidden">
+                                        <div class="bg-indigo-50 border border-indigo-200 p-4 rounded-lg mb-6">
+                                            <h4 class="text-indigo-900 font-bold mb-1"><i class="fa-solid fa-boxes-packing mr-2"></i>Оприходование на склад (B2B)</h4>
+                                            <p class="text-sm text-indigo-700">Товар не выдается клиенту. Выберите статус для передачи на склад продаж.</p>
+                                        </div>
+
+                                        <div class="flex space-x-6 mb-6">
+                                            <label class="flex-1 border rounded-lg p-3 bg-white cursor-pointer hover:bg-slate-50 border-slate-300">
+                                                <input type="radio" name="b2b_condition" value="new" onchange="toggleB2BDefects()" class="w-4 h-4 text-blue-600 mb-2">
+                                                <span class="font-bold text-slate-800 block">Как новый (Ликвид)</span>
+                                            </label>
+                                            <label class="flex-1 border rounded-lg p-3 bg-white cursor-pointer hover:bg-slate-50 border-slate-300">
+                                                <input type="radio" name="b2b_condition" value="discount" onchange="toggleB2BDefects()" checked class="w-4 h-4 text-orange-600 mb-2">
+                                                <span class="font-bold text-slate-800 block">Уценка</span>
+                                            </label>
+                                        </div>
+
+                                        <div id="b2b-defects-block" class="bg-orange-50 border border-orange-200 p-4 rounded-lg space-y-4 mb-6">
+                                            <div>
+                                                <label class="block text-sm font-bold text-orange-900 mb-1">Причины уценки</label>
+                                                <div class="grid grid-cols-2 gap-2 mb-2">
+                                                    <label class="inline-flex items-center text-sm"><input type="checkbox" checked class="w-4 h-4 rounded text-orange-600 mr-2"> Повреждена коробка</label>
+                                                    <label class="inline-flex items-center text-sm"><input type="checkbox" class="w-4 h-4 rounded text-orange-600 mr-2"> Царапины на корпусе</label>
+                                                    <label class="inline-flex items-center text-sm"><input type="checkbox" checked class="w-4 h-4 rounded text-orange-600 mr-2"> Отсутствует часть комплектации</label>
+                                                    <label class="inline-flex items-center text-sm"><input type="checkbox" class="w-4 h-4 rounded text-orange-600 mr-2"> Сколы на аксессуарах</label>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-sm font-bold text-orange-900 mb-1">Фото дефектов</label>
+                                                <div class="border-2 border-dashed border-orange-300 rounded-lg p-6 text-center cursor-pointer hover:bg-orange-100 transition" onclick="alert('Загрузка фото (Демо)')">
+                                                    <i class="fa-solid fa-camera text-3xl text-orange-400 mb-2"></i>
+                                                    <div class="text-sm text-orange-800 font-medium">Нажмите, чтобы загрузить фото</div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <button onclick="alert('Товар оприходован на склад как УЦЕНКА.')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3.5 rounded-lg font-bold text-lg shadow-md transition">
+                                            <i class="fa-solid fa-warehouse mr-2"></i> Оприходовать на склад
+                                        </button>
+                                    </div>
+
+                                </div>
+                            </div>
+                            
+                            <!-- Логи -->
+                            <div id="content-logs" class="tab-content hidden bg-slate-50 p-4 rounded-lg animate-fade"><div class="space-y-4" id="logs-list"></div></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- МОДАЛЬНОЕ ОКНО: ИНФО О ЭТАПЕ -->
+    <div id="modal-step-info" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 m-4">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-xl font-bold text-slate-800" id="step-modal-title">Этап</h3>
+                <button onclick="closeStepModal()" class="text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark text-2xl"></i></button>
+            </div>
+            <div class="space-y-4">
+                <div class="flex justify-between border-b pb-2"><span class="text-slate-500">Дата и время:</span><span class="font-bold text-slate-800" id="step-modal-time">--</span></div>
+                <div class="flex justify-between border-b pb-2"><span class="text-slate-500">Кто выполнил:</span><span class="font-bold text-slate-800" id="step-modal-user">--</span></div>
+                <div><span class="text-slate-500 block mb-1">Результат / Заключение:</span><div class="bg-slate-50 p-3 rounded text-sm text-slate-700" id="step-modal-desc">--</div></div>
+            </div>
+            <button onclick="closeStepModal()" class="mt-6 w-full bg-slate-800 text-white py-2 rounded-lg font-medium">Закрыть</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

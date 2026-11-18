@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TGT Service - Прием в ремонт</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans h-screen flex overflow-hidden text-base">
+
+    <aside></aside> <!-- Сайдбар подгрузится сам из sidebar.html -->
+
+    <!-- Основной контент -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        <header class="h-20 bg-white shadow-sm flex items-center justify-between px-8 z-10 shrink-0">
+            <h1 class="text-2xl font-bold text-slate-800">Оформление клиентского ремонта</h1>
+            <div class="flex items-center space-x-4">
+                <span class="text-base text-slate-500"><i class="fa-regular fa-calendar mr-2"></i> 15.11.2026 14:30</span>
+                <span class="text-base text-slate-500 bg-slate-100 px-3 py-1 rounded-full"><i class="fa-solid fa-user mr-2"></i> Приемщик: Иванова А.С.</span>
+            </div>
+        </header>
+
+        <div class="flex-1 overflow-auto p-8">
+            <form class="max-w-6xl mx-auto space-y-6" id="intake-repair-form" onsubmit="submitRepairForm(event)">
+                
+                <!-- 1. Параметры -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">1. Параметры заказа</h2>
+                    <div class="grid grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm text-slate-500 mb-1">Номер заказа (авто)</label>
+                            <input type="text" id="order-number" readonly value="2611001-701" class="w-full bg-slate-100 border border-slate-300 rounded-lg p-2.5 text-lg font-mono font-bold text-blue-700 outline-none">
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-sm text-slate-500 mb-2">Тип обращения</label>
+                            <div class="flex space-x-8 pt-2">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="order_type" value="warranty" class="text-blue-600 w-5 h-5" onchange="toggleRepairType()">
+                                    <span class="ml-3 text-base font-medium">Гарантийный</span>
+                                </label>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="radio" name="order_type" value="paid" class="text-blue-600 w-5 h-5" checked onchange="toggleRepairType()">
+                                    <span class="ml-3 text-base font-medium">Платный</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. Оборудование -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">2. Оборудование</h2>
+                    <div class="grid grid-cols-3 gap-6 mb-4">
+                        <div>
+                            <label class="block text-sm text-slate-500 mb-1">Производитель</label>
+                            <select class="w-full border border-slate-300 rounded-lg p-2.5 text-base outline-none"><option>RageX</option></select>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-500 mb-1">Тип</label>
+                            <select class="w-full border border-slate-300 rounded-lg p-2.5 text-base outline-none"><option>Кухонный комбайн</option></select>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-500 mb-1">Модель</label>
+                            <select class="w-full border border-slate-300 rounded-lg p-2.5 text-base outline-none"><option>R101-200</option></select>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-500 mb-1">S/N</label>
+                            <input type="text" class="w-full border border-slate-300 rounded-lg p-2.5 text-base outline-none" placeholder="Сканируйте...">
+                        </div>
+                        <div id="field-purchase-date" class="hidden">
+                            <label class="block text-sm text-slate-500 mb-1">Дата покупки</label>
+                            <input type="date" class="w-full border border-slate-300 rounded-lg p-2.5 text-base outline-none">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-500 mb-1">Комплектация</label>
+                            <input type="text" class="w-full border border-slate-300 rounded-lg p-2.5 text-base outline-none" placeholder="Коробка, чаша, нож...">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. Клиент -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">3. Клиент</h2>
+                    <div class="grid grid-cols-3 gap-6">
+                        <div>
+                            <label class="block text-sm text-slate-500 mb-1">Тип клиента</label>
+                            <select id="client-type" class="w-full border border-slate-300 rounded-lg p-2.5 text-base outline-none" onchange="toggleClientType()">
+                                <option value="individual">Физ. лицо</option>
+                                <option value="legal">Юр. лицо</option>
+                            </select>
+                        </div>
+                        <div class="col-span-2">
+                            <label class="block text-sm text-slate-500 mb-1">ФИО / Наименование</label>
+                            <input type="text" class="w-full border border-slate-300 rounded-lg p-2.5 text-base outline-none">
+                        </div>
+                        
+                        <div id="legal-fields" class="col-span-3 grid grid-cols-2 gap-6 bg-slate-50 p-4 rounded-lg border border-slate-200 hidden">
+                            <div>
+                                <label class="block text-sm text-slate-500 mb-1">УНП</label>
+                                <input type="text" class="w-full border border-slate-300 rounded-lg p-2.5 text-base outline-none" placeholder="9 цифр">
+                            </div>
+                            <div>
+                                <label class="block text-sm text-slate-500 mb-1">Расчетный счет</label>
+                                <input type="text" class="w-full border border-slate-300 rounded-lg p-2.5 text-base outline-none">
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm text-slate-500 mb-1">Телефон <span class="text-red-500">*</span></label>
+                            <input type="text" class="w-full border border-slate-300 rounded-lg p-2.5 text-base outline-none" placeholder="+375 (__) ___-__-__" maxlength="19">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-500 mb-1">Адрес</label>
+                            <input type="text" class="w-full border border-slate-300 rounded-lg p-2.5 text-base outline-none" placeholder="г. Минск, ул. ...">
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-500 mb-1">E-mail</label>
+                            <input type="email" class="w-full border border-slate-300 rounded-lg p-2.5 text-base outline-none">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 4. Дефект -->
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h2 class="text-lg font-bold text-slate-800 mb-4 border-b pb-2">4. Дефект</h2>
+                    <div class="grid grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-sm text-slate-500 mb-1">Претензия заказчика (со слов)</label>
+                            <textarea class="w-full border border-slate-300 rounded-lg p-3 text-base outline-none h-24 resize-none" placeholder="Опишите неисправность..."></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm text-slate-500 mb-1">Внешнее состояние</label>
+                            <textarea class="w-full border border-slate-300 rounded-lg p-3 text-base outline-none h-24 resize-none" placeholder="Царапины, потертости..."></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Кнопки -->
+                <div class="flex justify-end space-x-4 pt-4">
+                    <a href="queue.html" class="px-6 py-3 border border-slate-300 rounded-lg text-slate-700 text-base font-medium hover:bg-slate-50 transition">Отмена</a>
+                    <button type="submit" class="px-8 py-3 bg-blue-600 text-white rounded-lg text-base font-medium hover:bg-blue-700 shadow-sm transition">Создать заказ</button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

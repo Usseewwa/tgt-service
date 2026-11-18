@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TGT Service - Деталь</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans h-screen flex overflow-hidden text-base">
+
+    <aside></aside> <!-- Сайдбар подгрузится сам из sidebar.html -->
+
+
+
+
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        <div class="flex-1 overflow-auto p-8 w-full max-w-5xl mx-auto">
+            
+            <div class="flex items-center justify-between mb-6">
+                <a href="parts.html" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-base font-medium transition shadow-sm flex items-center">
+                    <i class="fa-solid fa-arrow-left mr-2"></i> К списку
+                </a>
+                <div id="view-mode-actions">
+                    <button onclick="toggleEditMode(true)" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-base font-medium shadow-sm transition"><i class="fa-solid fa-pen mr-1"></i> Редактировать</button>
+                </div>
+                <div id="edit-mode-actions" class="hidden space-x-3">
+                    <button onclick="initPartDetailsPage()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-5 py-2 rounded-lg text-base font-medium transition shadow-sm">Отмена</button>
+                    <button onclick="savePartDetails()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg text-base font-medium shadow-sm transition"><i class="fa-solid fa-floppy-disk mr-1"></i> Сохранить</button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden grid grid-cols-1 md:grid-cols-[260px_1fr] items-start">
+                
+                <div class="bg-slate-50 p-5 border-r border-slate-200 flex flex-col items-center">
+                    <div class="w-[200px] h-[280px] bg-white rounded-lg border border-slate-200 flex items-center justify-center mb-5 relative group overflow-hidden shrink-0">
+                        <img id="detail-img" src="" class="w-full h-full object-contain p-2">
+                        <button id="btn-change-photo" class="hidden absolute inset-0 bg-black bg-opacity-40 text-white transition flex items-center justify-center" onclick="alert('Открытие галереи (Демо)')"><i class="fa-solid fa-camera text-3xl"></i></button>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg border border-slate-200 divide-y divide-slate-100 w-full text-base">
+                        <div class="p-3 flex justify-between items-center">
+                            <span class="text-slate-500 font-medium">На складе</span>
+                            <span id="detail-stock-view" class="text-lg font-bold">0</span>
+                            <input type="number" id="detail-stock-edit" class="hidden w-20 text-right text-lg font-bold border border-blue-300 rounded px-2 py-1" value="0">
+                        </div>
+                        <div class="p-3 flex justify-between items-center bg-slate-50">
+                            <span class="text-slate-500 font-medium">Требуется</span>
+                            <span id="detail-required" class="text-lg font-bold text-orange-500">0</span>
+                        </div>
+                        <div class="p-3">
+                            <div id="detail-expected-view-container" class="flex justify-between items-center w-full">
+                                <span class="text-slate-500 font-medium">Ожидается</span>
+                                <div id="detail-expected-view" class="text-right flex flex-col items-end leading-tight"></div>
+                            </div>
+                            <div id="detail-expected-edit" class="hidden flex flex-col space-y-2 w-full">
+                                <input type="number" id="edit-expected-qty" class="w-full border border-blue-300 rounded px-2 py-1 text-sm" placeholder="Кол-во">
+                                <input type="date" id="edit-expected-date" class="w-full border border-blue-300 rounded px-2 py-1 text-sm">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-8 flex flex-col w-full">
+                    <div class="mb-3 flex items-center space-x-3">
+                        <span class="text-sm text-slate-400 font-bold uppercase">Артикул:</span>
+                        <span id="detail-article-view" class="font-mono text-base bg-slate-100 border rounded px-2 py-0.5">-</span>
+                        <input type="text" id="detail-article-edit" class="hidden font-mono text-base border rounded px-2 py-0.5 w-48" placeholder="Нет артикула">
+                    </div>
+                    
+                    <h2 id="detail-name-view" class="text-3xl font-bold text-slate-800 mb-4 leading-tight"></h2>
+                    <input type="text" id="detail-name-edit" class="hidden text-3xl font-bold text-slate-800 w-full border rounded px-2 py-1 mb-4">
+                    
+                    <div class="mb-5">
+                        <h3 class="text-sm text-slate-400 font-bold uppercase mb-1">Описание</h3>
+                        <p id="detail-desc-view" class="text-lg text-slate-600"></p>
+                        <textarea id="detail-desc-edit" class="hidden w-full border rounded-lg p-2 text-lg h-24"></textarea>
+                    </div>
+
+                    <div id="detail-extra-fields-view" class="mb-5 flex space-x-8 text-base bg-slate-50 p-3 rounded-lg">
+                        <div id="wrapper-dishwasher-view" class="hidden"><span class="text-slate-500">Мыть в ПММ:</span> <span id="detail-dishwasher-view" class="font-medium"></span></div>
+                        <div id="wrapper-dimensions-view" class="hidden"><span class="text-slate-500">Размеры:</span> <span id="detail-dimensions-view" class="font-medium"></span></div>
+                    </div>
+                    <div id="detail-extra-fields-edit" class="hidden mb-5 bg-slate-50 p-4 rounded-lg border space-y-3 text-base">
+                        <div class="flex items-center space-x-3">
+                            <label class="text-slate-600 w-32 font-medium">ПММ:</label>
+                            <select id="detail-dishwasher-edit" class="border rounded px-2 py-1 text-base flex-1"><option value="">Не указано</option><option value="Да">Да</option><option value="Нет">Нет</option></select>
+                        </div>
+                        <div class="flex items-center space-x-3">
+                            <label class="text-slate-600 w-32 font-medium">Размеры:</label>
+                            <input type="text" id="detail-dimensions-edit" class="border rounded px-2 py-1 text-base flex-1">
+                        </div>
+                    </div>
+
+                    <div class="mb-6">
+                        <h3 class="text-sm text-slate-400 font-bold uppercase mb-1">Заметки</h3>
+                        <p id="detail-note-view" class="text-base text-yellow-800 bg-yellow-50 p-3 rounded-lg border border-yellow-100"></p>
+                        <textarea id="detail-note-edit" class="hidden w-full border border-yellow-300 bg-yellow-50 rounded-lg p-2 text-base h-20"></textarea>
+                    </div>
+
+                    <div class="mt-auto w-full">
+                        <div class="border-b border-slate-200 mb-3">
+                            <nav class="flex space-x-8">
+                                <button onclick="switchDetailTab('history')" id="dtab-btn-history" class="pb-2 text-lg font-medium text-blue-600 border-b-2 border-blue-600">История списаний</button>
+                                <button onclick="switchDetailTab('waitlist')" id="dtab-btn-waitlist" class="pb-2 text-lg font-medium text-slate-500 hover:text-slate-800 border-b-2 border-transparent">Лист ожидания</button>
+                            </nav>
+                        </div>
+                        <div id="dtab-content-history" class="w-full overflow-hidden">
+                            <table class="w-full text-left text-base border-collapse">
+                                <thead class="bg-slate-50 text-slate-500 border-b"><tr><th class="py-2 px-3 font-semibold w-1/3">Заказ</th><th class="py-2 px-3 font-semibold w-1/3">Когда</th><th class="py-2 px-3 font-semibold">Кто</th></tr></thead>
+                                <tbody id="detail-history-body" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                        </div>
+                        <div id="dtab-content-waitlist" class="hidden w-full overflow-hidden">
+                            <table class="w-full text-left text-base border-collapse">
+                                <thead class="bg-slate-50 text-slate-500 border-b"><tr><th class="py-2 px-3 font-semibold w-1/3">Заказ</th><th class="py-2 px-3 font-semibold w-1/3">Когда</th><th class="py-2 px-3 font-semibold">Кто</th></tr></thead>
+                                <tbody id="detail-waitlist-body" class="divide-y divide-slate-100"></tbody>
+                            </table>
+                            <div id="no-waitlist" class="hidden text-slate-400 text-center py-4 text-base">Нет заказов в ожидании</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

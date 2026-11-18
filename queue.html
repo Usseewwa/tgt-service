@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TGT Service - Очередь ремонтов</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans h-screen flex overflow-hidden text-base">
+
+    <aside></aside> <!-- Сайдбар подгрузится сам из sidebar.html -->
+
+
+
+    <main class="flex-1 flex flex-col h-full overflow-hidden relative">
+        
+        <div class="flex-1 overflow-auto p-6 max-w-7xl mx-auto w-full">
+            <div class="bg-white p-3 rounded-xl border mb-4 flex flex-wrap gap-2 items-center justify-between">
+                <div class="flex items-center space-x-2 flex-wrap">
+                    <div class="relative w-56">
+                        <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+                        <input type="text" id="global-search" placeholder="Заказ, тел, S/N..." class="w-full pl-9 pr-3 py-1.5 border rounded-lg text-sm outline-none" oninput="renderQueue()">
+                    </div>
+                    <select id="status-filter" class="border rounded-lg px-2 py-1.5 text-sm outline-none" onchange="renderQueue()">
+                        <option value="">Все статусы</option>
+                        <option value="ОЖИДАНИЕ">Ожидание</option>
+                        <option value="ДИАГНОСТИКА">Диагностика</option>
+                        <option value="В РЕМОНТЕ">В ремонте</option>
+                        <option value="ТЕСТИРОВАНИЕ">Тестирование</option>
+                        <option value="ЗАВЕРШЕНО">Завершено</option>
+                    </select>
+                    <select id="type-filter" class="border rounded-lg px-2 py-1.5 text-sm outline-none" onchange="renderQueue()">
+                        <option value="">Все типы</option>
+                        <option value="warranty">Гарантия</option>
+                        <option value="paid">Платный</option>
+                        <option value="b2b">B2B</option>
+                    </select>
+                </div>
+                <div class="text-xs text-slate-500 font-medium" id="queue-counter">Найдено: 0</div>
+            </div>
+
+            <div class="bg-white rounded-xl border overflow-x-auto">
+                <table class="w-full text-left min-w-[900px]">
+                    <thead><tr class="bg-slate-50 text-slate-500 text-xs uppercase border-b"><th class="p-3">Номер</th><th class="p-3">Клиент / S/N</th><th class="p-3">Инженер</th><th class="p-3">Дедлайн</th><th class="p-3">Статус</th></tr></thead>
+                    <tbody id="queue-list" class="divide-y divide-slate-100"></tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
