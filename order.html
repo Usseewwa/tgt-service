@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TGT Service - Карточка ремонта</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -11,7 +14,6 @@
 <body class="bg-slate-100 text-slate-800 font-sans h-screen flex overflow-hidden text-base">
 
 <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-lg z-25 shrink-0"></aside>
-
 
     <!-- Основной контент -->
     <main class="flex-1 flex flex-col h-full overflow-hidden relative">
@@ -64,12 +66,12 @@
                     <div class="bg-white rounded-xl shadow-sm border border-slate-200 flex flex-col min-h-[700px]">
                         
                         <div class="flex border-b border-slate-200 bg-slate-50 px-2 pt-2 overflow-x-auto">
-                            <button onclick="switchMainTab('work')" id="tab-btn-work" class="tab-btn px-5 py-3 text-sm font-bold border-b-2 border-blue-600 text-blue-600 whitespace-nowrap"><i class="fa-solid fa-list-check mr-2"></i>Рабочая карта</button>
-                            <button onclick="switchMainTab('intake')" id="tab-btn-intake" class="tab-btn px-5 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">Приемка</button>
-                            <button onclick="switchMainTab('diagnostics')" id="tab-btn-diagnostics" class="tab-btn px-5 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">Диагностика</button>
-                            <button onclick="switchMainTab('repair')" id="tab-btn-repair" class="tab-btn px-5 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">Ремонт и ЗЧ</button>
-                            <button onclick="switchMainTab('issue')" id="tab-btn-issue" class="tab-btn px-5 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">Выдача</button>
-                            <button onclick="switchMainTab('logs')" id="tab-btn-logs" class="tab-btn px-5 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap"><i class="fa-solid fa-clock-rotate-left mr-1"></i> История</button>
+                            <button type="button" onclick="switchMainTab('work')" id="tab-btn-work" class="tab-btn px-5 py-3 text-sm font-bold border-b-2 border-blue-600 text-blue-600 whitespace-nowrap"><i class="fa-solid fa-list-check mr-2"></i>Рабочая карта</button>
+                            <button type="button" onclick="switchMainTab('intake')" id="tab-btn-intake" class="tab-btn px-5 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">Приемка</button>
+                            <button type="button" onclick="switchMainTab('diagnostics')" id="tab-btn-diagnostics" class="tab-btn px-5 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">Диагностика</button>
+                            <button type="button" onclick="switchMainTab('repair')" id="tab-btn-repair" class="tab-btn px-5 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">Ремонт и ЗЧ</button>
+                            <button type="button" onclick="switchMainTab('issue')" id="tab-btn-issue" class="tab-btn px-5 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap">Выдача</button>
+                            <button type="button" onclick="switchMainTab('logs')" id="tab-btn-logs" class="tab-btn px-5 py-3 text-sm font-medium border-b-2 border-transparent text-slate-500 hover:text-slate-800 whitespace-nowrap"><i class="fa-solid fa-clock-rotate-left mr-1"></i> История</button>
                         </div>
 
                         <div class="p-6 flex-1 bg-white relative">
@@ -152,7 +154,7 @@
                                                 <input type="text" class="w-full border p-2 rounded-lg text-sm" placeholder="Серия и номер паспорта">
                                             </div>
                                         </div>
-                                        <button onclick="alert('Заказ закрыт. Акт подписан. Устройство выдано клиенту.')" class="w-full bg-green-600 hover:bg-green-700 text-white py-3.5 rounded-lg font-bold text-lg shadow-md transition">
+                                        <button type="button" onclick="logAndAlert('Заказ закрыт. Акт подписан. Устройство выдано клиенту.', 'Выдача устройства клиенту и закрытие заказа.')" class="w-full bg-green-600 hover:bg-green-700 text-white py-3.5 rounded-lg font-bold text-lg shadow-md transition">
                                             <i class="fa-solid fa-signature mr-2"></i> Выдать клиенту (Закрыть заказ)
                                         </button>
                                     </div>
@@ -194,7 +196,7 @@
                                             </div>
                                         </div>
 
-                                        <button onclick="alert('Товар оприходован на склад как УЦЕНКА.')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3.5 rounded-lg font-bold text-lg shadow-md transition">
+                                        <button type="button" onclick="logAndAlert('Товар оприходован на склад.', 'Оприходование товара на склад B2B.')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3.5 rounded-lg font-bold text-lg shadow-md transition">
                                             <i class="fa-solid fa-warehouse mr-2"></i> Оприходовать на склад
                                         </button>
                                     </div>
@@ -217,17 +219,26 @@
         <div class="bg-white rounded-xl shadow-xl max-w-md w-full p-6 m-4">
             <div class="flex justify-between items-center mb-4">
                 <h3 class="text-xl font-bold text-slate-800" id="step-modal-title">Этап</h3>
-                <button onclick="closeStepModal()" class="text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark text-2xl"></i></button>
+                <button type="button" onclick="closeStepModal()" class="text-slate-400 hover:text-slate-700"><i class="fa-solid fa-xmark text-2xl"></i></button>
             </div>
             <div class="space-y-4">
                 <div class="flex justify-between border-b pb-2"><span class="text-slate-500">Дата и время:</span><span class="font-bold text-slate-800" id="step-modal-time">--</span></div>
                 <div class="flex justify-between border-b pb-2"><span class="text-slate-500">Кто выполнил:</span><span class="font-bold text-slate-800" id="step-modal-user">--</span></div>
                 <div><span class="text-slate-500 block mb-1">Результат / Заключение:</span><div class="bg-slate-50 p-3 rounded text-sm text-slate-700" id="step-modal-desc">--</div></div>
             </div>
-            <button onclick="closeStepModal()" class="mt-6 w-full bg-slate-800 text-white py-2 rounded-lg font-medium">Закрыть</button>
+            <button type="button" onclick="closeStepModal()" class="mt-6 w-full bg-slate-800 text-white py-2 rounded-lg font-medium">Закрыть</button>
         </div>
     </div>
 
     <script src="script.js"></script>
+    <script>
+        function logAndAlert(msg, logText) {
+            if (typeof addLog === 'function' && typeof activeOrder !== 'undefined' && activeOrder) {
+                addLog(logText);
+                if (typeof renderLogs === 'function') renderLogs();
+            }
+            alert(msg);
+        }
+    </script>
 </body>
 </html>

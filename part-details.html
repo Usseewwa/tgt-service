@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TGT Service - Деталь</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -11,9 +14,6 @@
 <body class="bg-slate-100 text-slate-800 font-sans h-screen flex overflow-hidden text-base">
 
 <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-lg z-25 shrink-0"></aside>
-
-
-
 
     <main class="flex-1 flex flex-col h-full overflow-hidden relative">
         <div class="flex-1 overflow-auto p-8 w-full max-w-5xl mx-auto">
@@ -23,11 +23,11 @@
                     <i class="fa-solid fa-arrow-left mr-2"></i> К списку
                 </a>
                 <div id="view-mode-actions">
-                    <button onclick="toggleEditMode(true)" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-base font-medium shadow-sm transition"><i class="fa-solid fa-pen mr-1"></i> Редактировать</button>
+                    <button type="button" onclick="toggleEditMode(true)" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-lg text-base font-medium shadow-sm transition"><i class="fa-solid fa-pen mr-1"></i> Редактировать</button>
                 </div>
                 <div id="edit-mode-actions" class="hidden space-x-3">
-                    <button onclick="initPartDetailsPage()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-5 py-2 rounded-lg text-base font-medium transition shadow-sm">Отмена</button>
-                    <button onclick="savePartDetails()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg text-base font-medium shadow-sm transition"><i class="fa-solid fa-floppy-disk mr-1"></i> Сохранить</button>
+                    <button type="button" onclick="initPartDetailsPage()" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-5 py-2 rounded-lg text-base font-medium transition shadow-sm">Отмена</button>
+                    <button type="button" onclick="savePartDetails()" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-lg text-base font-medium shadow-sm transition"><i class="fa-solid fa-floppy-disk mr-1"></i> Сохранить</button>
                 </div>
             </div>
 
@@ -36,7 +36,7 @@
                 <div class="bg-slate-50 p-5 border-r border-slate-200 flex flex-col items-center">
                     <div class="w-[200px] h-[280px] bg-white rounded-lg border border-slate-200 flex items-center justify-center mb-5 relative group overflow-hidden shrink-0">
                         <img id="detail-img" src="" class="w-full h-full object-contain p-2">
-                        <button id="btn-change-photo" class="hidden absolute inset-0 bg-black bg-opacity-40 text-white transition flex items-center justify-center" onclick="alert('Открытие галереи (Демо)')"><i class="fa-solid fa-camera text-3xl"></i></button>
+                        <button type="button" id="btn-change-photo" class="hidden absolute inset-0 bg-black bg-opacity-40 text-white transition flex items-center justify-center" onclick="alert('Открытие галереи (Демо)')"><i class="fa-solid fa-camera text-3xl"></i></button>
                     </div>
                     
                     <div class="bg-white rounded-lg border border-slate-200 divide-y divide-slate-100 w-full text-base">
@@ -102,8 +102,8 @@
                     <div class="mt-auto w-full">
                         <div class="border-b border-slate-200 mb-3">
                             <nav class="flex space-x-8">
-                                <button onclick="switchDetailTab('history')" id="dtab-btn-history" class="pb-2 text-lg font-medium text-blue-600 border-b-2 border-blue-600">История списаний</button>
-                                <button onclick="switchDetailTab('waitlist')" id="dtab-btn-waitlist" class="pb-2 text-lg font-medium text-slate-500 hover:text-slate-800 border-b-2 border-transparent">Лист ожидания</button>
+                                <button type="button" onclick="switchDetailTab('history')" id="dtab-btn-history" class="pb-2 text-lg font-medium text-blue-600 border-b-2 border-blue-600">История списаний</button>
+                                <button type="button" onclick="switchDetailTab('waitlist')" id="dtab-btn-waitlist" class="pb-2 text-lg font-medium text-slate-500 hover:text-slate-800 border-b-2 border-transparent">Лист ожидания</button>
                             </nav>
                         </div>
                         <div id="dtab-content-history" class="w-full overflow-hidden">
@@ -127,5 +127,15 @@
     </main>
 
     <script src="script.js"></script>
+    <script>
+        const _origToggleEditMode = typeof toggleEditMode === 'function' ? toggleEditMode : null;
+        if (_origToggleEditMode) {
+            toggleEditMode = function(edit) {
+                _origToggleEditMode(edit);
+                const btnPhoto = document.getElementById('btn-change-photo');
+                if (btnPhoto) btnPhoto.classList.toggle('hidden', !edit);
+            };
+        }
+    </script>
 </body>
 </html>

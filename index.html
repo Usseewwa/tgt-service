@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TGT Service - Аналитика</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -12,13 +15,12 @@
 
 <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-lg z-25 shrink-0"></aside>
 
-
-
-
     <main class="flex-1 flex flex-col h-full overflow-hidden relative">
         <header class="h-16 bg-white shadow-sm flex items-center px-6 z-10 justify-between shrink-0">
             <h1 class="text-lg font-bold text-slate-800">Аналитика и KPI</h1>
-            <div class="text-xs font-medium bg-slate-100 px-3 py-1 rounded-full"><i class="fa-solid fa-user-circle text-slate-400 mr-1"></i> Администратор</div>
+            <div id="header-user-badge" class="text-xs font-medium bg-slate-100 px-3 py-1 rounded-full">
+                <i class="fa-solid fa-user-circle text-slate-400 mr-1"></i> Загрузка...
+            </div>
         </header>
 
         <div class="flex-1 overflow-auto p-6 max-w-7xl mx-auto w-full">
@@ -87,5 +89,14 @@
     </div>
 
     <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const badge = document.getElementById('header-user-badge');
+            const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+            if (badge && user) {
+                badge.innerHTML = `<i class="fa-solid fa-user-circle text-slate-400 mr-1"></i> ${user.fullName} • ${user.role}`;
+            }
+        });
+    </script>
 </body>
 </html>

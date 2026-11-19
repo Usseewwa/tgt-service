@@ -4,29 +4,38 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TGT Service - Настройки</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans h-screen flex overflow-hidden text-base">
 
-<aside class="w-64 bg-slate-900 text-white flex flex-col shadow-lg z-25 shrink-0"></aside>
-
+    <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-lg z-25 shrink-0"></aside>
 
     <main class="flex-1 flex flex-col h-full overflow-hidden relative">
-        <header class="h-16 bg-white shadow-sm flex items-center px-6 z-10 shrink-0">
+        <header class="h-16 bg-white shadow-sm flex items-center justify-between px-6 z-10 shrink-0">
             <h1 class="text-lg font-bold text-slate-800">Настройки</h1>
+            <div id="settings-user-badge" class="text-xs font-medium bg-slate-100 text-slate-600 px-3 py-1 rounded-full">
+                <i class="fa-solid fa-user-shield text-slate-400 mr-1"></i>
+                <span id="settings-user-text">Загрузка...</span>
+            </div>
         </header>
 
         <div class="flex-1 overflow-auto p-6 max-w-5xl mx-auto w-full">
             <div class="flex border-b mb-4 space-x-4">
-                <button onclick="switchSettingsTab('loc')" id="stab-btn-loc" class="tab-btn py-2 active text-sm">Локации</button>
-                <button onclick="switchSettingsTab('users')" id="stab-btn-users" class="tab-btn py-2 text-slate-500 text-sm">Сотрудники</button>
+                <button type="button" onclick="switchSettingsTab('loc')" id="stab-btn-loc" class="tab-btn py-2 active text-sm">Локации</button>
+                <button type="button" onclick="switchSettingsTab('users')" id="stab-btn-users" class="tab-btn py-2 text-slate-500 text-sm">Сотрудники</button>
             </div>
 
+            <!-- Вкладка Локации -->
             <div id="settings-content-loc" class="tab-content bg-white rounded-xl border overflow-hidden">
                 <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-50 border-b"><tr><th class="p-3">Код</th><th class="p-3">Название</th><th class="p-3">Тип</th><th class="p-3">Регион</th></tr></thead>
+                    <thead class="bg-slate-50 border-b">
+                        <tr><th class="p-3">Код</th><th class="p-3">Название</th><th class="p-3">Тип</th><th class="p-3">Регион</th></tr>
+                    </thead>
                     <tbody class="divide-y">
                         <tr><td class="p-3 font-mono font-bold">701</td><td class="p-3">Главный СЦ</td><td class="p-3"><span class="bg-blue-100 text-blue-700 px-2 py-0.5 rounded text-xs font-bold">СЦ</span></td><td class="p-3">Минск</td></tr>
                         <tr><td class="p-3 font-mono font-bold">702</td><td class="p-3">ППВ Дзержинского</td><td class="p-3"><span class="bg-green-100 text-green-700 px-2 py-0.5 rounded text-xs font-bold">ППВ</span></td><td class="p-3">Минск</td></tr>
@@ -35,19 +44,92 @@
                 </table>
             </div>
 
-            <div id="settings-content-users" class="tab-content hidden bg-white rounded-xl border overflow-hidden">
-                <table class="w-full text-left text-sm">
-                    <thead class="bg-slate-50 border-b"><tr><th class="p-3">ФИО</th><th class="p-3">Роль</th><th class="p-3">Локация</th><th class="p-3">Логин</th></tr></thead>
-                    <tbody class="divide-y">
-                        <tr><td class="p-3">Иванова А.С.</td><td class="p-3 text-slate-600">Приемщик</td><td class="p-3">ППВ Дзержинского</td><td class="p-3 font-mono text-slate-500">ivanova</td></tr>
-                        <tr><td class="p-3">Петров И.И.</td><td class="p-3 text-blue-600 font-bold">Инженер</td><td class="p-3">Главный СЦ</td><td class="p-3 font-mono text-slate-500">petrov</td></tr>
-                        <tr><td class="p-3">Сидоров В.В.</td><td class="p-3 text-purple-600 font-bold">Админ АСЦ</td><td class="p-3">АСЦ Салби</td><td class="p-3 font-mono text-slate-500">sidorov</td></tr>
-                    </tbody>
-                </table>
+            <!-- Вкладка Сотрудники -->
+            <div id="settings-content-users" class="tab-content hidden bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h3 class="text-lg font-bold text-slate-800">Сотрудники и доступ</h3>
+                        <p class="text-xs text-slate-500 mt-0.5">Управление учётными записями, ролями и блокировкой входа</p>
+                    </div>
+                    <button type="button" onclick="openAddUserModal()"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold shadow-sm transition flex items-center">
+                        <i class="fa-solid fa-user-plus mr-2"></i> Добавить сотрудника
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left min-w-[700px]">
+                        <thead>
+                            <tr class="bg-slate-50 text-slate-500 text-xs uppercase border-b border-slate-200">
+                                <th class="p-3">ID</th>
+                                <th class="p-3">ФИО</th>
+                                <th class="p-3">Логин</th>
+                                <th class="p-3">Роль</th>
+                                <th class="p-3">Статус</th>
+                                <th class="p-3 text-right">Действия</th>
+                            </tr>
+                        </thead>
+                        <tbody id="users-table-body" class="divide-y divide-slate-100"></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </main>
 
+    <!-- Модальное окно добавления сотрудника -->
+    <div id="modal-add-user" class="fixed inset-0 bg-slate-900/60 hidden items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full shadow-xl overflow-hidden">
+            <div class="px-6 py-4 border-b border-slate-200 flex justify-between items-center">
+                <h3 class="font-bold text-lg text-slate-800">Новый сотрудник</h3>
+                <button type="button" onclick="closeAddUserModal()" class="text-slate-400 hover:text-slate-600">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+            <form id="form-add-user" onsubmit="handleAddUser(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">ФИО *</label>
+                    <input type="text" id="new-user-fullname" required placeholder="Например: Иванов И.И."
+                        class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Логин *</label>
+                    <input type="text" id="new-user-login" required placeholder="ivanov"
+                        class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm font-mono outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Пароль *</label>
+                    <input type="password" id="new-user-password" required minlength="4" placeholder="Минимум 4 символа"
+                        class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-blue-500">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1">Роль</label>
+                    <select id="new-user-role"
+                        class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm bg-white outline-none focus:border-blue-500">
+                        <option value="Инженер">Инженер</option>
+                        <option value="Приёмщик">Приёмщик</option>
+                        <option value="Руководитель">Руководитель</option>
+                        <option value="Администратор">Администратор</option>
+                    </select>
+                </div>
+                <div class="pt-3 border-t flex justify-end gap-2">
+                    <button type="button" onclick="closeAddUserModal()"
+                        class="px-4 py-2 rounded-lg border border-slate-300 text-sm font-bold text-slate-600 hover:bg-slate-50">Отмена</button>
+                    <button type="submit"
+                        class="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold">Создать</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const textEl = document.getElementById('settings-user-text');
+            const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+            if (textEl && user) {
+                textEl.textContent = `${user.fullName} • ${user.role}`;
+            }
+        });
+    </script>
 </body>
 </html>

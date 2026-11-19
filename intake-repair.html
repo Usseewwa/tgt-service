@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TGT Service - Прием в ремонт</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -18,7 +21,10 @@
             <h1 class="text-2xl font-bold text-slate-800">Оформление клиентского ремонта</h1>
             <div class="flex items-center space-x-4">
                 <span class="text-base text-slate-500"><i class="fa-regular fa-calendar mr-2"></i> 15.11.2026 14:30</span>
-                <span class="text-base text-slate-500 bg-slate-100 px-3 py-1 rounded-full"><i class="fa-solid fa-user mr-2"></i> Приемщик: Иванова А.С.</span>
+                <span id="intake-operator-badge" class="text-base text-slate-600 bg-slate-100 px-3 py-1 rounded-full inline-flex items-center">
+                    <i class="fa-solid fa-user mr-2 text-slate-400"></i>
+                    <span id="intake-operator-text">Приемщик: Загрузка...</span>
+                </span>
             </div>
         </header>
 
@@ -67,7 +73,7 @@
                         </div>
                         <div>
                             <label class="block text-sm text-slate-500 mb-1">S/N</label>
-                            <input type="text" class="w-full border border-slate-300 rounded-lg p-2.5 text-base outline-none" placeholder="Сканируйте...">
+                            <input type="text" id="repair-sn" class="w-full border border-slate-300 rounded-lg p-2.5 text-base outline-none" placeholder="Сканируйте...">
                         </div>
                         <div id="field-purchase-date" class="hidden">
                             <label class="block text-sm text-slate-500 mb-1">Дата покупки</label>
@@ -93,7 +99,7 @@
                         </div>
                         <div class="col-span-2">
                             <label class="block text-sm text-slate-500 mb-1">ФИО / Наименование</label>
-                            <input type="text" class="w-full border border-slate-300 rounded-lg p-2.5 text-base outline-none">
+                            <input type="text" id="repair-client-name" class="w-full border border-slate-300 rounded-lg p-2.5 text-base outline-none">
                         </div>
                         
                         <div id="legal-fields" class="col-span-3 grid grid-cols-2 gap-6 bg-slate-50 p-4 rounded-lg border border-slate-200 hidden">
@@ -109,7 +115,7 @@
 
                         <div>
                             <label class="block text-sm text-slate-500 mb-1">Телефон <span class="text-red-500">*</span></label>
-                            <input type="text" class="w-full border border-slate-300 rounded-lg p-2.5 text-base outline-none" placeholder="+375 (__) ___-__-__" maxlength="19">
+                            <input type="text" id="repair-phone" oninput="formatPhone(this)" class="w-full border border-slate-300 rounded-lg p-2.5 text-base outline-none" placeholder="+375 (__) ___-__-__" maxlength="19">
                         </div>
                         <div>
                             <label class="block text-sm text-slate-500 mb-1">Адрес</label>
@@ -147,5 +153,62 @@
     </main>
 
     <script src="script.js"></script>
+    <script>
+        function toggleRepairType() {
+            const selected = document.querySelector('input[name="order_type"]:checked');
+            const purchaseField = document.getElementById('field-purchase-date');
+            if (purchaseField && selected) {
+                purchaseField.classList.toggle('hidden', selected.value !== 'warranty');
+            }
+        }
+
+        function submitRepairForm(e) {
+            e.preventDefault();
+            const orderNum = document.getElementById('order-number')?.value || '2611001-701';
+            const type = document.querySelector('input[name="order_type"]:checked')?.value || 'paid';
+            const client = document.getElementById('repair-client-name')?.value.trim() || 'Клиент';
+            const sn = document.getElementById('repair-sn')?.value.trim() || '-';
+            const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+
+            if (typeof orders !== 'undefined' && Array.isArray(orders)) {
+                orders.unshift({
+                    id: orderNum,
+                    client: client,
+                    phone: document.getElementById('repair-phone')?.value || '-',
+                    device: 'R101-200',
+                    sn: sn,
+                    type: type,
+                    currentStep: 0,
+                    dateIn: '15.11.2026',
+                    deadline: '29.11.2026',
+                    engineer: 'Не назначен',
+                    diagnosis: { symptom: '', defect: '', text: '', parts: [] },
+                    stepLogs: {},
+                    history: [{
+                        time: new Date().toLocaleString('ru-RU'),
+                        userId: user ? user.id : null,
+                        user: user ? `${user.fullName} (ID: ${user.id})` : 'Приёмщик',
+                        text: 'Заказ создан при приёмке.'
+                    }]
+                });
+            }
+
+            if (user) {
+                console.log('Создан заказ на ремонт:', { orderNum, type, userId: user.id, fullName: user.fullName });
+            }
+
+            alert(`Заказ ${orderNum} создан.`);
+            window.location.href = 'queue.html';
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            toggleRepairType();
+            const textEl = document.getElementById('intake-operator-text');
+            const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+            if (textEl && user) {
+                textEl.textContent = `Приемщик: ${user.fullName} (ID: ${user.id})`;
+            }
+        });
+    </script>
 </body>
 </html>

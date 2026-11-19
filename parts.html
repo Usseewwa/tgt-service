@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TGT Service - Запчасти модели</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -11,8 +14,6 @@
 <body class="bg-slate-100 text-slate-800 font-sans h-screen flex overflow-hidden text-base">
 
 <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-lg z-25 shrink-0"></aside>
-
-
 
     <main class="flex-1 flex flex-col h-full overflow-hidden relative">
         <div class="flex-1 overflow-auto p-8 w-full max-w-7xl mx-auto">
@@ -35,8 +36,8 @@
 
             <div class="border-b border-slate-200 mb-6">
                 <nav class="flex space-x-6">
-                    <button onclick="switchPartsTab('grid')" id="ptab-btn-grid" class="pb-2 text-lg font-medium text-blue-600 border-b-2 border-blue-600">Запчасти</button>
-                    <button onclick="switchPartsTab('info')" id="ptab-btn-info" class="pb-2 text-lg font-medium text-slate-500 hover:text-slate-800 border-b-2 border-transparent">О модели</button>
+                    <button type="button" onclick="switchPartsTab('grid')" id="ptab-btn-grid" class="pb-2 text-lg font-medium text-blue-600 border-b-2 border-blue-600">Запчасти</button>
+                    <button type="button" onclick="switchPartsTab('info')" id="ptab-btn-info" class="pb-2 text-lg font-medium text-slate-500 hover:text-slate-800 border-b-2 border-transparent">О модели</button>
                 </nav>
             </div>
 
@@ -50,11 +51,11 @@
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-xl font-bold text-slate-800">Информация о модели</h3>
                     <div id="specs-view-actions">
-                        <button onclick="toggleSpecsEditMode(true)" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-base font-medium shadow-sm transition"><i class="fa-solid fa-pen mr-1"></i> Редактировать</button>
+                        <button type="button" onclick="toggleSpecsEditMode(true)" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-base font-medium shadow-sm transition"><i class="fa-solid fa-pen mr-1"></i> Редактировать</button>
                     </div>
                     <div id="specs-edit-actions" class="hidden space-x-3">
-                        <button onclick="toggleSpecsEditMode(false)" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-base font-medium transition shadow-sm">Отмена</button>
-                        <button onclick="saveSpecsAndNotes()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-base font-medium shadow-sm transition"><i class="fa-solid fa-floppy-disk mr-1"></i> Сохранить</button>
+                        <button type="button" onclick="toggleSpecsEditMode(false)" class="bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 px-4 py-2 rounded-lg text-base font-medium transition shadow-sm">Отмена</button>
+                        <button type="button" onclick="saveSpecsAndNotes()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg text-base font-medium shadow-sm transition"><i class="fa-solid fa-floppy-disk mr-1"></i> Сохранить</button>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 xl:grid-cols-2 gap-6 items-stretch">
@@ -63,7 +64,7 @@
                         <div id="specs-view-mode" class="divide-y divide-slate-100 border-t border-slate-100"></div>
                         <div id="specs-edit-mode" class="hidden space-y-3">
                             <div id="specs-edit-list" class="space-y-3"></div>
-                            <button onclick="addSpecRow()" class="mt-2 text-blue-600 hover:text-blue-800 font-medium text-base flex items-center transition"><i class="fa-solid fa-plus-circle mr-2"></i> Добавить характеристику</button>
+                            <button type="button" onclick="addSpecRow()" class="mt-2 text-blue-600 hover:text-blue-800 font-medium text-base flex items-center transition"><i class="fa-solid fa-plus-circle mr-2"></i> Добавить характеристику</button>
                         </div>
                     </div>
                     <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 flex flex-col">

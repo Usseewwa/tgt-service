@@ -1,4 +1,87 @@
 // ==========================================
+// СИСТЕМА АВТОРИЗАЦИИ И СОТРУДНИКОВ (МОК-БД)
+// ==========================================
+const DEFAULT_USERS = [
+    { id: 1, fullName: 'Администраторов А.А.', login: 'admin', passwordHash: 'hash_admin123', role: 'Администратор', status: 'active' },
+    { id: 2, fullName: 'Соколов В.М.', login: 'sokolov', passwordHash: 'hash_123456', role: 'Руководитель', status: 'active' },
+    { id: 3, fullName: 'Ковалёва Е.С.', login: 'kovaleva', passwordHash: 'hash_123456', role: 'Приёмщик', status: 'active' },
+    { id: 4, fullName: 'Петров И.И.', login: 'petrov', passwordHash: 'hash_123456', role: 'Инженер', status: 'active' },
+    { id: 5, fullName: 'Смирнов А.В.', login: 'smirnov', passwordHash: 'hash_123456', role: 'Инженер', status: 'blocked' }
+];
+
+function getUsersDB() {
+    const saved = localStorage.getItem('tgt_users_db');
+    if (saved) return JSON.parse(saved);
+    localStorage.setItem('tgt_users_db', JSON.stringify(DEFAULT_USERS));
+    return DEFAULT_USERS;
+}
+
+function saveUsersDB(users) {
+    localStorage.setItem('tgt_users_db', JSON.stringify(users));
+}
+
+function getCurrentUser() {
+    const userId = parseInt(localStorage.getItem('tgt_current_user_id'));
+    if (!userId) return null;
+    const users = getUsersDB();
+    const user = users.find(u => u.id === userId);
+    // Если сотрудника заблокировали или удалили — сбрасываем сессию
+    if (!user || user.status !== 'active') {
+        localStorage.removeItem('tgt_current_user_id');
+        return null;
+    }
+    return user;
+}
+
+// Защита закрытого контура (срабатывает мгновенно при загрузке скрипта)
+(function checkAuthGuard() {
+    const page = window.location.pathname.split('/').pop() || 'index.html';
+    const currentUser = getCurrentUser();
+
+    if (page === 'login.html') {
+        if (currentUser) window.location.replace('index.html');
+    } else {
+        if (!currentUser) window.location.replace('login.html');
+    }
+})();
+
+function fillDemoLogin(login, pass) {
+    document.getElementById('login-username').value = login;
+    document.getElementById('login-password').value = pass;
+}
+
+function handleLogin(e) {
+    e.preventDefault();
+    const login = document.getElementById('login-username').value.trim().toLowerCase();
+    const password = document.getElementById('login-password').value;
+    const errorBox = document.getElementById('login-error');
+    const errorText = document.getElementById('login-error-text');
+
+    const users = getUsersDB();
+    const user = users.find(u => u.login.toLowerCase() === login);
+
+    if (!user || user.passwordHash !== 'hash_' + password) {
+        errorText.innerText = 'Неверный логин или пароль.';
+        errorBox.classList.remove('hidden');
+        return;
+    }
+
+    if (user.status === 'blocked') {
+        errorText.innerText = 'Учётная запись заблокирована. Обратитесь к администратору.';
+        errorBox.classList.remove('hidden');
+        return;
+    }
+
+    localStorage.setItem('tgt_current_user_id', user.id);
+    window.location.href = 'index.html';
+}
+
+function logoutUser() {
+    localStorage.removeItem('tgt_current_user_id');
+    window.location.href = 'login.html';
+}
+
+// ==========================================
 // БАЗА ДАННЫХ
 // ==========================================
 const TODAY = new Date(2026, 10, 15);
@@ -259,11 +342,41 @@ function submitForm(e) {
         }
         document.getElementById('modal-labels').classList.remove('hidden');
         document.getElementById('modal-labels').classList.add('flex');
-    } else {
-        const orderNum = document.getElementById('order-number').value;
-        document.getElementById('success-order-num').innerText = orderNum;
-        document.getElementById('modal-success-statuses').classList.remove('hidden');
-        document.getElementById('modal-success-statuses').classList.add('flex');
+		} else {
+				const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+				const orderNum = document.getElementById('order-number').value;
+				if (user) {
+					console.log('Приёмка заказа:', { orderNum, userId: user.id, fullName: user.fullName });
+				}
+				document.getElementById('success-order-num').innerText = orderNum;
+				document.getElementById('modal-success-statuses').classList.remove('hidden');
+				document.getElementById('modal-success-statuses').classList.add('flex');
+			}
+}
+
+function submitB2BForm(e) {
+    e.preventDefault();
+    const qty = parseInt(document.getElementById('b2b-qty')?.value) || 1;
+    const source = document.getElementById('b2b-source')?.value || 'B2B';
+    const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+    const listDiv = document.getElementById('label-list');
+    if (!listDiv) return;
+
+    listDiv.innerHTML = '';
+    const startNum = 1451;
+    for (let i = 0; i < qty; i++) {
+        const num = String(startNum + i).padStart(6, '0');
+        listDiv.innerHTML += `<div class="flex justify-between items-center border-b border-slate-200 pb-1 mb-1 last:border-0"><span>RX-${num}</span> <span class="text-xs text-slate-500 bg-white border px-2 py-0.5 rounded">||| |||| || |||</span></div>`;
+    }
+
+    if (user) {
+        console.log('B2B приёмка:', { userId: user.id, fullName: user.fullName, source, qty });
+    }
+
+    const modal = document.getElementById('modal-labels');
+    if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
     }
 }
 
@@ -670,49 +783,53 @@ function renderWorkArea() {
             </div>
         `;
     }
-    else if (step === 1) {
-        if (isEditingFaults) {
-            container.innerHTML = `
-                <h3 class="text-xl font-bold text-slate-800 mb-4 flex items-center"><i class="fa-solid fa-pen-to-square text-blue-600 mr-2"></i> Редактор неисправностей</h3>
-                <p class="text-sm text-slate-500 mb-4">Слева — название неисправности, справа — требуемая запчасть.</p>
-                <div id="fault-editor-list" class="space-y-3 mb-6"></div>
-                <button onclick="addFaultRow()" class="text-sm text-blue-600 font-bold hover:underline flex items-center mb-6"><i class="fa-solid fa-plus-circle mr-1"></i> Добавить новую неисправность</button>
-                <div class="pt-4 border-t flex justify-end space-x-3">
-                    <button onclick="cancelEditFaults()" class="px-6 py-2 border rounded-lg font-bold text-slate-600 hover:bg-slate-50">Отмена</button>
-                    <button onclick="saveFaults()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold shadow-sm">Сохранить</button>
-                </div>
-            `;
-            renderFaultEditorRows();
-        } else {
-            let checkboxesHtml = '';
-            Object.values(availablePartsDB).forEach(part => {
-                const isChecked = activeOrder.diagnosis.parts.some(p => p.id === part.id);
-                checkboxesHtml += `
-                    <label class="flex items-center p-3 border rounded-lg bg-white cursor-pointer hover:bg-slate-50 mb-2">
-                        <input type="checkbox" class="w-5 h-5 text-blue-600 rounded part-checkbox" value="${part.id}" ${isChecked ? 'checked' : ''} onchange="togglePartSelection('${part.id}')">
-                        <span class="ml-3 text-base text-slate-700 flex-1">${part.symptom}</span>
-                        ${part.inStock ? '<span class="text-xs text-green-600 font-bold bg-green-50 px-2 py-1 rounded">В наличии</span>' : '<span class="text-xs text-red-600 font-bold bg-red-50 px-2 py-1 rounded">Нет на складе</span>'}
-                    </label>
-                `;
-            });
-            container.innerHTML = `
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="text-xl font-bold text-slate-800">Проведение диагностики</h3>
-                    <button onclick="startEditFaults()" class="text-sm text-blue-600 font-bold hover:underline flex items-center"><i class="fa-solid fa-pen mr-1"></i> Редактировать</button>
-                </div>
-                <p class="text-sm text-slate-500 mb-4">Отметьте все выявленные неисправности.</p>
-                <div class="space-y-5">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="parts-checklist">${checkboxesHtml}</div>
-                    <div>
-                        <label class="block text-sm font-bold text-slate-700 mb-1">Заключение инженера</label>
-                        <textarea id="defect-text" class="w-full border p-3 rounded-lg h-24" placeholder="Опишите выявленные проблемы..."></textarea>
+else if (step === 1) {
+        const modelParts = parts.filter(p => p.applianceId === activeOrder.device);
+        let cardsHtml = '';
+
+        modelParts.forEach(part => {
+            const isSelected = activeOrder.diagnosis.parts.some(p => p.id === part.id);
+            const inStock = part.stock > 0;
+            const stockBadge = inStock
+                ? `<span class="text-xs text-green-700 font-bold bg-green-50 border border-green-200 px-2 py-0.5 rounded">На складе: ${part.stock} шт.</span>`
+                : `<span class="text-xs text-red-700 font-bold bg-red-50 border border-red-200 px-2 py-0.5 rounded">Нет на складе</span>`;
+            const articleTag = part.article
+                ? `<span class="text-[11px] font-mono text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded">${part.article}</span>`
+                : '';
+
+            cardsHtml += `
+                <label class="flex items-center gap-3.5 p-3 border rounded-xl cursor-pointer transition ${isSelected ? 'bg-blue-50/70 border-blue-400 shadow-xs' : 'bg-white border-slate-200 hover:bg-slate-50'}">
+                    <input type="checkbox" class="w-5 h-5 text-blue-600 rounded shrink-0" ${isSelected ? 'checked' : ''} onchange="toggleModelPart(${part.id})">
+                    <div class="w-14 h-14 bg-white rounded-lg border border-slate-200 flex items-center justify-center p-1 shrink-0 overflow-hidden">
+                        <img src="${part.img}" alt="${part.name}" class="max-w-full max-h-full object-contain">
                     </div>
-                    <div id="parts-status-alert" class="hidden"></div>
-                    <div class="pt-4 border-t flex justify-end space-x-3" id="diag-actions"></div>
-                </div>
+                    <div class="min-w-0 flex-1">
+                        <div class="text-sm font-bold text-slate-800 leading-snug truncate" title="${part.name}">${part.name}</div>
+                        <div class="flex flex-wrap items-center gap-2 mt-1">
+                            ${articleTag}
+                            ${stockBadge}
+                        </div>
+                    </div>
+                </label>
             `;
-            updateDiagStatus();
-        }
+        });
+
+        container.innerHTML = `
+            <div class="mb-4">
+                <h3 class="text-xl font-bold text-slate-800">Проведение диагностики</h3>
+                <p class="text-sm text-slate-500 mt-0.5">Выберите запчасти из спецификации модели <span class="font-mono font-bold text-slate-700">${activeOrder.device}</span> для замены.</p>
+            </div>
+            <div class="space-y-5">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3" id="model-parts-checklist">${cardsHtml}</div>
+                <div>
+                    <label class="block text-sm font-bold text-slate-700 mb-1">Заключение инженера</label>
+                    <textarea id="defect-text" class="w-full border border-slate-300 rounded-lg p-3 text-sm h-24 outline-none focus:border-blue-500" placeholder="Опишите выявленные проблемы и результаты проверки...">${activeOrder.diagnosis.text || ''}</textarea>
+                </div>
+                <div id="parts-status-alert" class="hidden"></div>
+                <div class="pt-4 border-t flex justify-end space-x-3" id="diag-actions"></div>
+            </div>
+        `;
+        updateDiagStatus();
     }
     else if (step === 2) {
         let partsHtml = '';
@@ -781,76 +898,85 @@ function renderWorkArea() {
     }
 }
 
-// --- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ДЛЯ РЕМОНТА ---
-function startEditFaults() { isEditingFaults = true; renderWorkArea(); }
-function cancelEditFaults() { isEditingFaults = false; renderWorkArea(); }
+function toggleModelPart(partId) {
+    const part = parts.find(p => p.id === partId);
+    if (!part) return;
 
-function renderFaultEditorRows() {
-    const list = document.getElementById('fault-editor-list');
-    list.innerHTML = '';
-    Object.values(availablePartsDB).forEach((fault, index) => {
-        let optionsHtml = '';
-        masterPartsList.forEach(part => {
-            const isSelected = fault.name === part.name ? 'selected' : '';
-            optionsHtml += `<option value="${part.id}" ${isSelected}>${part.name}</option>`;
+    const exists = activeOrder.diagnosis.parts.some(p => p.id === part.id);
+    if (exists) {
+        activeOrder.diagnosis.parts = activeOrder.diagnosis.parts.filter(p => p.id !== part.id);
+    } else {
+        activeOrder.diagnosis.parts.push({
+            id: part.id,
+            name: part.name,
+            article: part.article || '',
+            img: part.img,
+            qty: 1,
+            inStock: part.stock > 0
         });
-        list.innerHTML += `
-            <div class="flex space-x-3 items-center fault-row" id="fault-row-${index}">
-                <input type="text" value="${fault.symptom}" placeholder="Название" class="flex-1 border border-slate-300 rounded-lg p-2.5 text-sm focus:border-blue-500 outline-none">
-                <select class="w-1/2 border border-slate-300 rounded-lg p-2.5 text-sm focus:border-blue-500 outline-none">${optionsHtml}</select>
-                <button onclick="removeFaultRow(${index})" class="text-red-500 hover:text-red-700 p-2"><i class="fa-solid fa-trash-can text-lg"></i></button>
-            </div>
-        `;
-    });
-}
-
-function addFaultRow() {
-    const list = document.getElementById('fault-editor-list');
-    const index = list.children.length;
-    let optionsHtml = '';
-    masterPartsList.forEach(part => { optionsHtml += `<option value="${part.id}">${part.name}</option>`; });
-    list.innerHTML += `
-        <div class="flex space-x-3 items-center fault-row" id="fault-row-${index}">
-            <input type="text" placeholder="Новая неисправность" class="flex-1 border border-slate-300 rounded-lg p-2.5 text-sm focus:border-blue-500 outline-none">
-            <select class="w-1/2 border border-slate-300 rounded-lg p-2.5 text-sm focus:border-blue-500 outline-none">${optionsHtml}</select>
-            <button onclick="removeFaultRow(${index})" class="text-red-500 hover:text-red-700 p-2"><i class="fa-solid fa-trash-can text-lg"></i></button>
-        </div>
-    `;
-}
-
-function removeFaultRow(index) {
-    const row = document.getElementById(`fault-row-${index}`);
-    if (row) row.remove();
-}
-
-function saveFaults() {
-    const rows = document.querySelectorAll('.fault-row');
-    const newFaultsDB = {};
-    rows.forEach((row, index) => {
-        const symptomInput = row.querySelector('input');
-        const partSelect = row.querySelector('select');
-        const symptom = symptomInput.value.trim();
-        const partId = partSelect.value;
-        if (!symptom) return; 
-        const selectedPart = masterPartsList.find(p => p.id === partId) || masterPartsList[0];
-        const dbKey = 'custom_' + Date.now() + '_' + index;
-        newFaultsDB[dbKey] = { id: dbKey, symptom: symptom, name: selectedPart.name, img: selectedPart.img, inStock: true };
-    });
-    availablePartsDB = newFaultsDB;
-    isEditingFaults = false;
+    }
     renderWorkArea();
 }
 
-function takeToDiagnostics() { activeOrder.currentStep = 1; addLog('Взял устройство со стеллажа.'); updateUI(); }
+function updateDiagStatus() {
+    const alertBox = document.getElementById('parts-status-alert');
+    const actionsBox = document.getElementById('diag-actions');
+    if (!alertBox || !actionsBox) return;
 
-function togglePartSelection(partId) {
-    const part = availablePartsDB[partId];
-    if (!activeOrder.diagnosis.parts.some(p => p.id === partId)) {
-        activeOrder.diagnosis.parts.push({ ...part, qty: 1 });
+    const missingParts = activeOrder.diagnosis.parts.filter(p => !p.inStock);
+
+    if (missingParts.length > 0) {
+        alertBox.classList.remove('hidden');
+        alertBox.innerHTML = `<div class="bg-red-50 border border-red-200 p-3 rounded-lg text-sm text-red-800"><i class="fa-solid fa-times-circle mr-1.5"></i> <b>Внимание!</b> Нет на складе: ${missingParts.map(p => p.name).join(', ')}.</div>`;
+        actionsBox.innerHTML = `
+            <button type="button" onclick="postpone()" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-bold text-sm transition">Отложить (Ожидание ЗЧ)</button>
+            <button type="button" onclick="cancelDueToDeadline()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg font-bold text-sm transition">Сорвать срок / Связаться</button>
+        `;
     } else {
-        activeOrder.diagnosis.parts = activeOrder.diagnosis.parts.filter(p => p.id !== partId);
+        alertBox.classList.add('hidden');
+        const btnLabel = activeOrder.diagnosis.parts.length > 0
+            ? 'Подтвердить и перейти к ремонту'
+            : 'Завершить диагностику без замены ЗЧ';
+        actionsBox.innerHTML = `<button type="button" onclick="confirmDiagnosis()" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2.5 rounded-lg font-bold text-sm shadow-sm transition">${btnLabel}</button>`;
     }
-    updateDiagStatus();
+}
+
+function confirmDiagnosis() {
+    const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+    const authorName = user ? `${user.fullName} (ID: ${user.id})` : 'Инженер';
+    const textEl = document.getElementById('defect-text');
+    activeOrder.diagnosis.text = textEl ? textEl.value.trim() : '';
+
+    const partNames = activeOrder.diagnosis.parts.map(p => p.name).join(', ');
+    activeOrder.diagnosis.symptom = activeOrder.diagnosis.parts.map(p => p.article).filter(Boolean).join(', ') || 'По спецификации';
+    activeOrder.diagnosis.defect = partNames || 'Без замены ЗЧ';
+
+    activeOrder.stepLogs[1] = {
+        time: new Date().toLocaleString('ru-RU'),
+        user: authorName,
+        desc: `Выбранные ЗЧ: ${partNames || 'нет'}. Заключение: ${activeOrder.diagnosis.text || '—'}`
+    };
+    activeOrder.currentStep = 2;
+    addLog(partNames ? `Диагностика завершена. Выбраны ЗЧ: ${partNames}.` : 'Диагностика завершена (замена ЗЧ не требуется).');
+    updateUI();
+}
+
+function postpone() {
+    const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+    const authorName = user ? `${user.fullName} (ID: ${user.id})` : 'Инженер';
+    const textEl = document.getElementById('defect-text');
+    if (textEl) activeOrder.diagnosis.text = textEl.value.trim();
+
+    const missingPartsNames = activeOrder.diagnosis.parts.filter(p => !p.inStock).map(p => p.name).join(', ');
+    activeOrder.stepLogs[1] = {
+        time: new Date().toLocaleString('ru-RU'),
+        user: authorName,
+        desc: `Отложено из-за отсутствия на складе: ${missingPartsNames}.`
+    };
+    activeOrder.currentStep = 1;
+    addLog(`Отложен ремонт. Ожидаются ЗЧ: ${missingPartsNames}.`);
+    updateUI();
+    alert(`Заказ оставлен в ожидании ЗЧ.\nНет на складе: ${missingPartsNames}`);
 }
 
 function updateDiagStatus() {
@@ -972,7 +1098,14 @@ function toggleB2BDefects() {
 }
 
 function addLog(text) {
-    activeOrder.history.unshift({ time: new Date().toLocaleString('ru-RU'), user: 'Инженер', text: text });
+    const user = getCurrentUser();
+    const authorLabel = user ? `${user.fullName} (ID: ${user.id})` : 'Система';
+    activeOrder.history.unshift({
+        time: new Date().toLocaleString('ru-RU'),
+        userId: user ? user.id : null,
+        user: authorLabel,
+        text: text
+    });
 }
 
 function updateUI() {
@@ -1033,38 +1166,18 @@ function syncStaticTabs() {
     }
 }
 
-// ==========================================
-// УПРАВЛЕНИЕ ШРИФТАМИ И ОТРИСОВКА САЙДБАРА
-// ==========================================
-const SIDEBAR_FONTS = {
-    inter: { label: 'Inter', family: "'Inter', sans-serif" },
-    plex: { label: 'Plex', family: "'IBM Plex Sans', sans-serif" },
-    mono: { label: 'Mono', family: "'JetBrains Mono', monospace" }
-};
-
-function setSidebarFont(fontKey) {
-    const aside = document.querySelector('aside');
-    const font = SIDEBAR_FONTS[fontKey] || SIDEBAR_FONTS.inter;
-    if (aside) {
-        aside.style.fontFamily = font.family;
-    }
-    localStorage.setItem('tgt_sidebar_font', fontKey);
-
-    document.querySelectorAll('.font-switch-btn').forEach(btn => {
-        if (btn.dataset.font === fontKey) {
-            btn.className = 'font-switch-btn flex-1 py-1 text-xs font-bold rounded bg-blue-600 text-white transition';
-        } else {
-            btn.className = 'font-switch-btn flex-1 py-1 text-xs font-medium rounded bg-slate-800 text-slate-400 hover:text-white transition';
-        }
-    });
-}
-
 function renderSidebar() {
     const aside = document.querySelector('aside');
     if (!aside) return;
 
+    aside.className = "w-64 bg-slate-900 text-white flex flex-col shadow-lg z-20 shrink-0";
+    aside.style.fontFamily = "'Inter', sans-serif";
+
     const path = window.location.pathname.split('/').pop() || 'index.html';
-    
+    const user = getCurrentUser();
+    const userName = user ? user.fullName : 'Сотрудник';
+    const userRole = user ? user.role : '—';
+
     aside.innerHTML = `
         <div class="h-16 flex items-center px-6 border-b border-slate-800 shrink-0">
             <span class="font-black tracking-widest uppercase text-white whitespace-nowrap" style="font-size: 13px !important;">TGT Service</span>
@@ -1080,23 +1193,151 @@ function renderSidebar() {
             <a href="index.html" class="sidebar-link ${path === 'index.html' ? 'active' : ''} py-2.5"><i class="fa-solid fa-chart-pie w-5 mr-3"></i> Аналитика и KPI</a>
         </nav>
 
-        <div class="p-3 border-t border-slate-800 shrink-0 space-y-2">
-            <a href="settings.html" class="sidebar-link ${path === 'settings.html' ? 'active' : ''} py-2.5 !px-3 rounded-lg"><i class="fa-solid fa-gear w-5 mr-3"></i> Настройки</a>
-            
-            <div class="pt-1 border-t border-slate-800/80">
-                <div class="text-[10px] text-slate-500 uppercase font-bold mb-1 px-1">Шрифт меню</div>
-                <div class="flex gap-1 bg-slate-950 p-1 rounded-lg">
-                    <button type="button" data-font="inter" onclick="setSidebarFont('inter')" class="font-switch-btn py-1 text-xs">Inter</button>
-                    <button type="button" data-font="plex" onclick="setSidebarFont('plex')" class="font-switch-btn py-1 text-xs">Plex</button>
-                    <button type="button" data-font="mono" onclick="setSidebarFont('mono')" class="font-switch-btn py-1 text-xs">Mono</button>
+        <div class="p-3 border-t border-slate-800 shrink-0 space-y-2.5">
+            <a href="settings.html" class="sidebar-link ${path === 'settings.html' ? 'active' : ''} py-2 !px-3 rounded-lg"><i class="fa-solid fa-gear w-5 mr-3"></i> Настройки</a>
+
+            <!-- Блок текущего пользователя -->
+            <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-2.5 flex items-center justify-between gap-2">
+                <div class="min-w-0">
+                    <div class="text-xs font-bold text-white truncate" title="${userName}">${userName}</div>
+                    <div class="text-[11px] text-blue-400 font-medium truncate">${userRole}</div>
                 </div>
+                <button type="button" onclick="logoutUser()" title="Выход из системы"
+                    class="shrink-0 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-red-600 text-slate-300 hover:text-white text-xs font-bold transition flex items-center gap-1">
+                    <i class="fa-solid fa-right-from-bracket"></i>
+                    <span>Выход</span>
+                </button>
             </div>
         </div>
     `;
-
-    const savedFont = localStorage.getItem('tgt_sidebar_font') || 'inter';
-    setSidebarFont(savedFont);
 }
+
+// ==========================================
+// УПРАВЛЕНИЕ СОТРУДНИКАМИ (settings.html)
+// ==========================================
+function renderUsersTable() {
+    const tbody = document.getElementById('users-table-body');
+    if (!tbody) return;
+
+    const users = getUsersDB();
+    const currentUser = getCurrentUser();
+    tbody.innerHTML = '';
+
+    users.forEach(u => {
+        const isBlocked = u.status === 'blocked';
+        const isSelf = currentUser && currentUser.id === u.id;
+
+        const statusBadge = isBlocked
+            ? `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700">Заблокирован</span>`
+            : `<span class="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-700">Активен</span>`;
+
+        const roles = ['Администратор', 'Руководитель', 'Приёмщик', 'Инженер'];
+        const roleOptions = roles.map(r => `<option value="${r}" ${u.role === r ? 'selected' : ''}>${r}</option>`).join('');
+
+        tbody.innerHTML += `
+            <tr class="hover:bg-slate-50 transition ${isBlocked ? 'opacity-65' : ''}">
+                <td class="p-3 font-mono text-xs text-slate-500">#${u.id}</td>
+                <td class="p-3 font-bold text-slate-800 text-sm">
+                    ${u.fullName}
+                    ${isSelf ? '<span class="ml-1.5 text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded">Вы</span>' : ''}
+                </td>
+                <td class="p-3 font-mono text-xs text-slate-600">${u.login}</td>
+                <td class="p-3">
+                    <select onchange="changeUserRole(${u.id}, this.value)"
+                        class="border border-slate-300 rounded-lg px-2.5 py-1 text-xs font-medium bg-white outline-none focus:border-blue-500">
+                        ${roleOptions}
+                    </select>
+                </td>
+                <td class="p-3">${statusBadge}</td>
+                <td class="p-3 text-right space-x-2 whitespace-nowrap">
+                    <button type="button" onclick="resetUserPassword(${u.id})"
+                        class="px-2.5 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-100 text-slate-700 text-xs font-bold transition">
+                        <i class="fa-solid fa-key mr-1 text-slate-400"></i> Пароль
+                    </button>
+                    <button type="button" onclick="toggleUserStatus(${u.id})" ${isSelf ? 'disabled' : ''}
+                        class="px-2.5 py-1.5 rounded-lg text-xs font-bold transition ${isSelf ? 'opacity-40 cursor-not-allowed bg-slate-100 text-slate-400' : (isBlocked ? 'bg-emerald-600 hover:bg-emerald-700 text-white' : 'bg-red-50 hover:bg-red-100 text-red-700 border border-red-200')}">
+                        ${isBlocked ? 'Разблокировать' : 'Заблокировать'}
+                    </button>
+                </td>
+            </tr>
+        `;
+    });
+}
+
+function openAddUserModal() {
+    document.getElementById('modal-add-user').classList.remove('hidden');
+    document.getElementById('modal-add-user').classList.add('flex');
+}
+
+function closeAddUserModal() {
+    document.getElementById('modal-add-user').classList.add('hidden');
+    document.getElementById('modal-add-user').classList.remove('flex');
+    document.getElementById('form-add-user').reset();
+}
+
+function handleAddUser(e) {
+    e.preventDefault();
+    const fullName = document.getElementById('new-user-fullname').value.trim();
+    const login = document.getElementById('new-user-login').value.trim().toLowerCase();
+    const password = document.getElementById('new-user-password').value;
+    const role = document.getElementById('new-user-role').value;
+
+    const users = getUsersDB();
+    if (users.some(u => u.login.toLowerCase() === login)) {
+        alert('Пользователь с таким логином уже существует!');
+        return;
+    }
+
+    const nextId = users.length > 0 ? Math.max(...users.map(u => u.id)) + 1 : 1;
+    users.push({
+        id: nextId,
+        fullName,
+        login,
+        passwordHash: 'hash_' + password,
+        role,
+        status: 'active'
+    });
+
+    saveUsersDB(users);
+    closeAddUserModal();
+    renderUsersTable();
+}
+
+function changeUserRole(userId, newRole) {
+    const users = getUsersDB();
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+    user.role = newRole;
+    saveUsersDB(users);
+    renderSidebar();
+}
+
+function resetUserPassword(userId) {
+    const users = getUsersDB();
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+    const newPass = prompt(`Введите новый пароль для сотрудника ${user.fullName} (${user.login}):`);
+    if (newPass && newPass.trim().length >= 4) {
+        user.passwordHash = 'hash_' + newPass.trim();
+        saveUsersDB(users);
+        alert(`Пароль для ${user.fullName} успешно обновлён.`);
+    } else if (newPass !== null) {
+        alert('Пароль должен содержать минимум 4 символа.');
+    }
+}
+
+function toggleUserStatus(userId) {
+    const users = getUsersDB();
+    const user = users.find(u => u.id === userId);
+    if (!user) return;
+    user.status = user.status === 'active' ? 'blocked' : 'active';
+    saveUsersDB(users);
+    renderUsersTable();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('users-table-body')) renderUsersTable();
+});
 
 // Запускаем отрисовку сразу
 renderSidebar();

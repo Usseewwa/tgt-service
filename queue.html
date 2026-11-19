@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TGT Service - Очередь ремонтов</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
@@ -11,8 +14,6 @@
 <body class="bg-slate-100 text-slate-800 font-sans h-screen flex overflow-hidden text-base">
 
 <aside class="w-64 bg-slate-900 text-white flex flex-col shadow-lg z-25 shrink-0"></aside>
-
-
 
     <main class="flex-1 flex flex-col h-full overflow-hidden relative">
         
@@ -38,7 +39,13 @@
                         <option value="b2b">B2B</option>
                     </select>
                 </div>
-                <div class="text-xs text-slate-500 font-medium" id="queue-counter">Найдено: 0</div>
+                <div class="flex items-center gap-3">
+                    <span id="queue-operator-badge" class="hidden sm:inline-flex items-center text-xs text-slate-600 bg-slate-100 px-2.5 py-1 rounded-full">
+                        <i class="fa-solid fa-user mr-1.5 text-slate-400"></i>
+                        <span id="queue-operator-text"></span>
+                    </span>
+                    <div class="text-xs text-slate-500 font-medium" id="queue-counter">Найдено: 0</div>
+                </div>
             </div>
 
             <div class="bg-white rounded-xl border overflow-x-auto">
@@ -51,5 +58,16 @@
     </main>
 
     <script src="script.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const badge = document.getElementById('queue-operator-badge');
+            const textEl = document.getElementById('queue-operator-text');
+            const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+            if (badge && textEl && user) {
+                textEl.textContent = `${user.fullName} (ID: ${user.id})`;
+                badge.classList.remove('hidden');
+            }
+        });
+    </script>
 </body>
 </html>
