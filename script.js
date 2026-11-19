@@ -774,12 +774,12 @@ function renderWorkArea() {
     if (!container) return;
     const step = activeOrder.currentStep;
 
-    if (step === 0) {
+if (step === 0) {
         container.innerHTML = `
             <div class="text-center py-10">
                 <i class="fa-solid fa-box text-6xl text-slate-300 mb-4"></i>
                 <h3 class="text-xl font-bold text-slate-800 mb-2">Устройство ожидает</h3>
-                <button onclick="takeToDiagnostics()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-bold shadow-md transition">Взять в диагностику</button>
+                <button type="button" onclick="takeToDiagnostics()" class="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-lg font-bold shadow-md transition">Взять в диагностику</button>
             </div>
         `;
     }
@@ -916,6 +916,27 @@ function toggleModelPart(partId) {
         });
     }
     renderWorkArea();
+}
+
+function takeToDiagnostics() {
+    if (!activeOrder) return;
+    const user = typeof getCurrentUser === 'function' ? getCurrentUser() : null;
+    const authorLabel = user ? `${user.fullName} (ID: ${user.id})` : 'Инженер';
+
+    if (user && (!activeOrder.engineer || activeOrder.engineer === 'Не назначен')) {
+        activeOrder.engineer = user.fullName;
+    }
+
+    activeOrder.stepLogs = activeOrder.stepLogs || {};
+    activeOrder.stepLogs[0] = {
+        time: new Date().toLocaleString('ru-RU'),
+        user: authorLabel,
+        desc: 'Устройство взято со стеллажа и передано на диагностику.'
+    };
+
+    activeOrder.currentStep = 1;
+    addLog('Взял устройство со стеллажа в диагностику.');
+    updateUI();
 }
 
 function updateDiagStatus() {
